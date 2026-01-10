@@ -4,6 +4,19 @@ import electronLogo from './assets/electron.svg'
 function App() {
   const ipcHandle = () => window.electron.ipcRenderer.send('ping')
 
+  // Test button
+  const handleCalendarTest = async () => {
+    const testEvent = {
+      title: 'Test Success',
+      description: 'Testing sync.',
+      start: new Date().toISOString(),
+      end: new Date(Date.now() + 3600000).toISOString()
+    }
+
+    await window.api.testGoogleSync(testEvent)
+    alert('Check your calendar.')
+  }
+
   return (
     <>
       <img alt="logo" className="logo" src={electronLogo} />
@@ -25,6 +38,13 @@ function App() {
             Send IPC
           </a>
         </div>
+        {/* ---Test Button REMOVE--- */}
+        <div className="action">
+          <a target="_blank" rel="noreferrer" onClick={handleCalendarTest}>
+            Test Calendar
+          </a>
+        </div>
+        {/* ---End Button REMOVE--- */}
       </div>
       <Versions></Versions>
     </>

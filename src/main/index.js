@@ -1,10 +1,11 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { createCalendarEvent } from './calendar'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
 function createWindow() {
-  // Create the browser window. 
+  // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 900,
     height: 670,
@@ -51,6 +52,16 @@ app.whenReady().then(() => {
 
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))
+
+  // Test GCal REMOVE
+  ipcMain.handle('calendar:test-sync', async (event, data) => {
+    try {
+      return await createCalendarEvent(data)
+    } catch (error) {
+      console.error('Calendar Sync Error: ', error)
+      throw error
+    }
+  })
 
   createWindow()
 
