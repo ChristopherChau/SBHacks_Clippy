@@ -10,19 +10,25 @@ const STATIC_TEST_INPUT = {
           id: 'd0-s0',
           name: 'Variables',
           contentType: 'reading',
-          url: 'https://google.com'
+          youtubeUrl: 'https://www.youtube.com/results?search_query=javascript+variables',
+          articleUrl:
+            'https://developer.mozilla.org/en-US/docs/Learn/JavaScript/First_steps/Variables',
+          summary: 'Test'
         },
         {
           id: 'd0-s1',
           name: 'Basic Types',
           contentType: 'exercise',
-          url: 'https://google.com'
+          youtubeUrl: 'https://www.youtube.com/results?search_query=javascript+types',
+          articleUrl: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures'
         },
         {
           id: 'd0-s2',
           name: 'Operators',
           contentType: 'video',
-          url: 'https://google.com'
+          youtubeUrl: 'https://www.youtube.com/results?search_query=javascript+operators',
+          articleUrl:
+            'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Expressions_and_operators'
         }
       ]
     },
@@ -33,25 +39,30 @@ const STATIC_TEST_INPUT = {
           id: 'd1-s0',
           name: 'Functions',
           contentType: 'video',
-          url: 'https://google.com'
+          youtubeUrl: 'https://www.youtube.com/results?search_query=javascript+functions',
+          articleUrl: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Functions'
         },
         {
           id: 'd1-s1',
           name: 'Scope',
           contentType: 'exercise',
-          url: 'https://google.com'
+          youtubeUrl: 'https://www.youtube.com/results?search_query=javascript+scope',
+          articleUrl: 'https://developer.mozilla.org/en-US/docs/Glossary/Scope'
         },
         {
           id: 'd1-s2',
           name: 'Closures',
           contentType: 'reading',
-          url: 'https://google.com'
+          youtubeUrl: 'https://www.youtube.com/results?search_query=javascript+closures',
+          articleUrl: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures'
         },
         {
           id: 'd1-s3',
           name: 'Arrow Functions',
           contentType: 'exercise',
-          url: 'https://google.com'
+          youtubeUrl: 'https://www.youtube.com/results?search_query=javascript+arrow+functions',
+          articleUrl:
+            'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions'
         }
       ]
     },
@@ -62,19 +73,25 @@ const STATIC_TEST_INPUT = {
           id: 'd2-s0',
           name: 'Objects',
           contentType: 'reading',
-          url: 'https://google.com'
+          youtubeUrl: 'https://www.youtube.com/results?search_query=javascript+objects',
+          articleUrl:
+            'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Working_with_objects'
         },
         {
           id: 'd2-s1',
           name: 'Arrays',
           contentType: 'video',
-          url: 'https://google.com'
+          youtubeUrl: 'https://www.youtube.com/results?search_query=javascript+arrays',
+          articleUrl:
+            'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array'
         },
         {
           id: 'd2-s2',
           name: 'Array Methods',
           contentType: 'exercise',
-          url: 'https://google.com'
+          youtubeUrl: 'https://www.youtube.com/results?search_query=javascript+array+methods',
+          articleUrl:
+            'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array#instance_methods'
         }
       ]
     },
@@ -85,13 +102,17 @@ const STATIC_TEST_INPUT = {
           id: 'd3-s0',
           name: 'Async/Await',
           contentType: 'video',
-          url: 'https://google.com'
+          youtubeUrl: 'https://www.youtube.com/results?search_query=javascript+async+await',
+          articleUrl:
+            'https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Asynchronous/Promises'
         },
         {
           id: 'd3-s1',
           name: 'Promises',
           contentType: 'reading',
-          url: 'https://google.com'
+          youtubeUrl: 'https://www.youtube.com/results?search_query=javascript+promises',
+          articleUrl:
+            'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise'
         }
       ]
     }
@@ -156,7 +177,9 @@ const Visualizer = ({ data = STATIC_TEST_INPUT }) => {
         id: skill.id,
         type: 'skill',
         name: skill.name,
-        url: skill.url,
+        summary: skill.summary ?? '',
+        youtubeUrl: skill.youtubeUrl,
+        articleUrl: skill.articleUrl,
         contentType: skill.contentType,
         difficulty: level.difficulty,
         levelIndex: index

@@ -13,7 +13,8 @@ if (process.contextIsolated) {
 
     // CHANGE Testing GCal
     contextBridge.exposeInMainWorld('api', {
-      exportRoadmap: (data) => ipcRenderer.invoke('calendar:export-roadmap', data)
+      exportRoadmap: (data) => ipcRenderer.invoke('calendar:export-roadmap', data),
+      createCalendarEvent: (data) => ipcRenderer.invoke('calendar:create-event', data)
     })
   } catch (error) {
     console.error(error)

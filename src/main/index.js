@@ -1,5 +1,4 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
-import { exportRoadmapToCalendar } from './calendar'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
@@ -7,7 +6,7 @@ import icon from '../../resources/icon.png?asset'
 function createWindow() {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 900,
+    width: 90,
     height: 670,
     show: false,
     autoHideMenuBar: true,
@@ -53,10 +52,7 @@ app.whenReady().then(() => {
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))
 
-  // Test GCal REMOVE
-  ipcMain.handle('calendar:export-roadmap', async (event, roadmapData) => {
-    return await exportRoadmapToCalendar(roadmapData)
-  })
+  // Calendar IPC handlers removed (src/main/calendar.js not present)
 
   createWindow()
 
