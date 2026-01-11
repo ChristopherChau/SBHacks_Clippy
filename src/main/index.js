@@ -3,8 +3,9 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
-import { initDb } from './db'
+import { createDb } from './db'
 import { generateRoadmap } from './retrievemap'
+let db
 
 function createWindow() {
   // Create the browser window.
@@ -42,18 +43,19 @@ function createWindow() {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(async () => {
+  const dbPath = join(app.getPath('userData'), 'cache.db')
+
+  const dbInstance = createDb(dbPath)
+  db = dbInstance.db
+
+  await dbInstance.initDb()
   // Initialize database
-  await initDb()
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
 
-  const response = await generateRoadmap(
-    'rust programming',
-    'I know computer science conceptions like data structures but I have no knowledge on how to use rust',
-    'I want to create a custom socket in rust'
-  )
+  // const response = await generateRoadmap("rust programming", "I know computer science conceptions like data structures but I have no knowledge on how to use rust", "I want to create a custom socket in rust")
 
-  console.log(response)
+  // console.log(response);
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
@@ -85,3 +87,9 @@ app.on('window-all-closed', () => {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
+
+ipcMain.handle('generate-roadmap', async (_, payload) => {
+  const { topic, level_description, end_goal } = payload
+
+  return await generateRoadmap(db, topic, level_description, end_goal)
+})
