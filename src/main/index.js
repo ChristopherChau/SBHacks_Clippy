@@ -3,6 +3,8 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
+import { initDb } from './db'
+
 function createWindow() {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
@@ -38,9 +40,15 @@ function createWindow() {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  // Initialize database
+  await initDb();
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
+  
+  const response = await generateRoadmap("rust programming", "I know computer science conceptions like data structures but I have no knowledge on how to use rust", "I want to create a custom socket in rust")
+
+  console.log(response);
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
@@ -51,8 +59,6 @@ app.whenReady().then(() => {
 
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))
-
-  // Calendar IPC handlers removed (src/main/calendar.js not present)
 
   createWindow()
 
