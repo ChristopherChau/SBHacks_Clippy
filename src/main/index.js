@@ -1,9 +1,16 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
+import { existsSync, mkdirSync, writeFileSync } from 'fs'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
 import { createDb } from './db'
+
+// Ensure videos directory exists
+const videosDir = join(__dirname, 'videos')
+if (!existsSync(videosDir)) {
+  mkdirSync(videosDir, { recursive: true })
+}
 import { generateKnowledgeQuestion, generateRoadmap, gradeKnowledgeQuestion } from './retrievemap'
 let db
 
@@ -104,4 +111,22 @@ ipcMain.handle('grade-question', async (_, payload) => {
   const { question, answer, skill, topic } = payload
 
   return await gradeKnowledgeQuestion(question, answer, skill, topic)
+})
+
+ipcMain.handle('save-video', async (_, payload) => {
+  const { fileName, data } = payload
+
+  try {
+    const filePath = join(videosDir, fileName)
+    const buffer = Buffer.from(data)
+    writeFileSync(filePath, buffer)
+    return { success: true, path: filePath }
+  } catch (error) {
+    console.error('Error saving video:', error)
+    return { success: false, error: error.message }
+  }
+})
+
+ipcMain.handle('get-videos-path', async () => {
+  return videosDir
 })

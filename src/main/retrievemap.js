@@ -288,28 +288,38 @@ const encodeVideoToBase64 = async (videoPath) => {
 };
 
 export const gradeDemonstrativeQuestion = async (question, videoPath, skill, topic) =>{
-    const videoPath = 'path/to/your/video.mp4';
     const base64Video = await encodeVideoToBase64(videoPath);
 
+    const gradePrompt = `I am trying to improve at ${topic}, specifically the skill ${skill}.
+    I was given the request of doing: ${question}. Return a JSON object stating whether 
+    I correctly performed the skill. Give 0 for a fail, 1 for a pass, and 2 for a partial pass.
+    If I perform the skill correctly provide advice on what you are looking for. 
+    Follow the format { pass: 0, reason: null }`
+
     const response = await openRouter.chat.send({
-    model: 'google/gemini-2.5-flash',
+    model: model,
     messages: [
         {
         role: 'user',
         content: [
             {
-            type: 'text',
-            text: "",
+              type: 'text',
+              text: gradePrompt,
             },
             {
-            type: 'video_url',
-            videoUrl: {
-                url: base64Video,
-            },
+              type: 'video_url',
+              videoUrl: {
+                  url: base64Video,
+              },
             },
         ],
         },
     ],
     stream: false,
+    responseFormat: {
+      type: 'json_object'
+    },
     });
+
+    return response;
 }

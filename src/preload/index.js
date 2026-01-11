@@ -6,7 +6,9 @@ const api = {
   generateRoadmap: (payload) => ipcRenderer.invoke('generate-roadmap', payload),
   generateKnowledgeQuestion: (payload) =>
     ipcRenderer.invoke('generate-knowledge-question', payload),
-  gradeKnowledgeQuestion: (payload) => ipcRenderer.invoke('grade-question', payload)
+  gradeKnowledgeQuestion: (payload) => ipcRenderer.invoke('grade-question', payload),
+  saveVideo: (payload) => ipcRenderer.invoke('save-video', payload),
+  getVideosPath: () => ipcRenderer.invoke('get-videos-path')
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to
