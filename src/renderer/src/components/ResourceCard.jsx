@@ -66,6 +66,8 @@ export default function ResourceCard({ skill, topic = '', isDone, onToggleDone, 
 
   if (!skill) return null
 
+  // Note: we intentionally render only `gradeResult.reason` for the knowledge-check result UI.
+
   return (
     <div
       className="fixed inset-0 bg-black/55 flex items-center justify-center p-6 z-[10000]"
@@ -185,7 +187,7 @@ export default function ResourceCard({ skill, topic = '', isDone, onToggleDone, 
                     Result
                   </div>
                   <div className="text-sm text-slate-200 whitespace-pre-wrap">
-                    {JSON.stringify(gradeResult, null, 2)}
+                    {gradeResult.reason ? String(gradeResult.reason) : 'No reason provided.'}
                   </div>
                 </div>
               ) : null}
@@ -193,7 +195,7 @@ export default function ResourceCard({ skill, topic = '', isDone, onToggleDone, 
           </Tabs.Content>
         </Tabs.Root>
 
-        <div className="flex justify-end gap-3">
+        <div className="mt-4 flex justify-end gap-3">
           {activeTab === 'knowledge' ? (
             <button
               type="button"
@@ -210,6 +212,10 @@ export default function ResourceCard({ skill, topic = '', isDone, onToggleDone, 
                     topic
                   })
                   setGradeResult(res)
+                  // Auto-mark done only when pass === 1 (and only if it's currently not done)
+                  if (res?.pass === 1 && !isDone) {
+                    onToggleDone?.()
+                  }
                 } catch (e) {
                   console.error(e)
                   setGradeResult({ pass: 0, reason: 'Failed to grade.' })
