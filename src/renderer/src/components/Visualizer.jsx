@@ -108,13 +108,7 @@ const Visualizer = ({ inputData }) => {
           <div>Error processing input data</div>
         )}
       </div>
-    )
-  }
-
-  return (
-    <div className="flex items-center justify-center w-screen h-screen bg-[#020617] text-white">
-      Unexpected state: No data and no error.
-    </div>
+    </>
   )
 }
 
