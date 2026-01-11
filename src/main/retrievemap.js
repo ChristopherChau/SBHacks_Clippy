@@ -151,8 +151,10 @@ const contentSkill = async (db, topic, skills) => {
   // Content information -> text / tips / youtube -> link
   const contentPrompt = `For the topic of ${topic} consider the skill list : ${skills}. For each skill web search and find:
     1. a short description of the skill, 2. 1-3 tips for the skill, 3. a web resource
-    If there is no reasonable resource found for the skill put null. Output the format in
-    { skill1: {description: ..., tips: [...], url: ...}, skill2: ..., ...}`
+    If there is no reasonable resource found for the skill put null. Additionally figure out whether the skill should
+    generally be tested through questioning or asked to be performed (performed as in skills that can only be tested through physical means,
+    such as being able to do a backflip or play a violin). Output the format in
+    { skill1: {description: ..., tips: [...], url: ..., performed: false}, skill2: ..., ...}`
   const contentResponse = await openRouter.chat.send({
     model: model,
     messages: [
@@ -203,8 +205,9 @@ export const generateRoadmap = async (db, topic, level_description, end_goal) =>
         tips: contentResponse[skills[j]].tips,
         url: contentResponse[skills[j]].url,
         description: contentResponse[skills[j]].description,
+        performative: contentResponse[skills[j]].performed,
         pass: 0,
-        dependencies: dependencies[skills[j]]
+        dependencies: dependencies[skills[j]],
       }
       parsedSkills.push(parsedSkill)
     }
