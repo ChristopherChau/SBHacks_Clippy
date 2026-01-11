@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useRef, useEffect } from 'react'
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch'
 import ResourceCard from './ResourceCard'
 import * as Progress from '@radix-ui/react-progress'
@@ -7,55 +7,92 @@ import * as Progress from '@radix-ui/react-progress'
 // --- CONSTANTS FOR LAYOUT ---
 const CARD_WIDTH = 200
 const CARD_GAP = 40
-const LINE_HEIGHT = 64
 
-// --- TOP LINES: From Level Title down to Skill Cards (Branching) ---
-const BranchingLines = ({ count }) => {
-  if (count === 0) return null
-  const totalWidth = count * CARD_WIDTH + (count - 1) * CARD_GAP
-  const rowCenter = totalWidth / 2
-  return (
-    <div className="relative w-full h-16 pointer-events-none">
-      <svg
-        style={{ width: totalWidth, left: '50%', transform: 'translateX(-50%)' }}
-        className="absolute h-full overflow-visible"
-      >
-        {Array.from({ length: count }).map((_, i) => {
-          const cardCenter = i * (CARD_WIDTH + CARD_GAP) + CARD_WIDTH / 2
-          // Cubic Bezier: Move to start, Curve to end
-          const path = `M ${rowCenter} 0 C ${rowCenter} 30, ${cardCenter} 30, ${cardCenter} ${LINE_HEIGHT}`
-          return <path key={i} d={path} stroke="#334155" strokeWidth="2" fill="none" />
-        })}
-      </svg>
-    </div>
-  )
-}
+// --- DEPENDENCY LINES: Draw edges between tasks based on dependencies ---
+const DependencyLines = ({ skills, cardPositions, hoveredSkillId }) => {
+  if (!cardPositions || Object.keys(cardPositions).length === 0) return null
 
-// --- BOTTOM LINES: From Skill Cards down to Next Level Title (Merging) ---
-const MergingLines = ({ count }) => {
-  if (count === 0) return null
-  const totalWidth = count * CARD_WIDTH + (count - 1) * CARD_GAP
-  const rowCenter = totalWidth / 2
+  const edges = []
+
+  // Build edges based on dependencies
+  skills.forEach((skill) => {
+    if (!skill.dependencies || skill.dependencies.length === 0) return
+
+    const targetPos = cardPositions[skill.id]
+    if (!targetPos) return
+
+    skill.dependencies.forEach((depId) => {
+      const sourcePos = cardPositions[depId]
+      if (!sourcePos) return
+
+      edges.push({
+        from: depId,
+        to: skill.id,
+        sourcePos,
+        targetPos
+      })
+    })
+  })
+
+  if (edges.length === 0) return null
+
+  // Calculate bounding box for SVG - cover the entire container
+  const allPositions = Object.values(cardPositions)
+  const minX = Math.min(...allPositions.map((p) => p.x)) - 500
+  const maxX = Math.max(...allPositions.map((p) => p.x)) + 500
+  const minY = Math.min(...allPositions.map((p) => p.top)) - 500
+  const maxY = Math.max(...allPositions.map((p) => p.bottom)) + 500
+
+  const width = maxX - minX
+  const height = maxY - minY
+
   return (
-    <div className="relative w-full h-16 pointer-events-none">
-      <svg
-        style={{ width: totalWidth, left: '50%', transform: 'translateX(-50%)' }}
-        className="absolute h-full overflow-visible"
-      >
-        {Array.from({ length: count }).map((_, i) => {
-          const cardCenter = i * (CARD_WIDTH + CARD_GAP) + CARD_WIDTH / 2
-          // Start at card, curve back to the center point for the next level title
-          const path = `M ${cardCenter} 0 C ${cardCenter} 34, ${rowCenter} 34, ${rowCenter} ${LINE_HEIGHT}`
-          return <path key={i} d={path} stroke="#334155" strokeWidth="2" fill="none" />
-        })}
-      </svg>
-    </div>
+    <svg
+      className="absolute pointer-events-none"
+      style={{
+        width: `${width}px`,
+        height: `${height}px`,
+        left: `${minX}px`,
+        top: `${minY}px`,
+        zIndex: 10
+      }}
+    >
+      {edges.map((edge, idx) => {
+        // Coordinates are already relative to container, just offset by SVG position
+        const x1 = edge.sourcePos.x - minX
+        const y1 = edge.sourcePos.y - minY
+        const x2 = edge.targetPos.x - minX
+        const y2 = edge.targetPos.y - minY
+
+        // Create a smooth curve
+        const midY = (y1 + y2) / 2
+        const path = `M ${x1} ${y1} C ${x1} ${midY}, ${x2} ${midY}, ${x2} ${y2}`
+
+        // Highlight only if this edge points TO the hovered skill (i.e., edge.to is the hovered skill)
+        const isHighlighted = hoveredSkillId && edge.to === hoveredSkillId
+
+        return (
+          <path
+            key={`${edge.from}-${edge.to}-${idx}`}
+            d={path}
+            stroke={isHighlighted ? '#60a5fa' : '#3b82f6'}
+            strokeWidth={isHighlighted ? '3' : '2'}
+            fill="none"
+            opacity={isHighlighted ? '0.9' : '0.5'}
+            strokeDasharray="5,5"
+          />
+        )
+      })}
+    </svg>
   )
 }
 
 function Tree({ processedData, topic = '' }) {
   const [doneSkillIds, setDoneSkillIds] = useState(() => new Set())
   const [selectedSkillId, setSelectedSkillId] = useState(null)
+  const [hoveredSkillId, setHoveredSkillId] = useState(null)
+  const cardRefs = useRef({}) // Track DOM refs for each skill card
+  const [cardPositions, setCardPositions] = useState({}) // Track positions for drawing edges
 
   const allSkills = useMemo(() => processedData?.skillNodes ?? [], [processedData])
   const totalTasks = allSkills.length
@@ -71,6 +108,78 @@ function Tree({ processedData, topic = '' }) {
     })
     return map
   }, [allSkills])
+
+  // Get all dependencies for a skill (including the skill itself)
+  const getRelatedSkills = (skillId) => {
+    if (!skillId) return new Set()
+    const related = new Set([skillId])
+    const skill = allSkills.find((s) => s.id === skillId)
+    if (skill?.dependencies) {
+      skill.dependencies.forEach((depId) => related.add(depId))
+    }
+    return related
+  }
+
+  const relatedSkills = useMemo(() => getRelatedSkills(hoveredSkillId), [hoveredSkillId, allSkills])
+
+  // Calculate card positions after render
+  useEffect(() => {
+    const updatePositions = () => {
+      const positions = {}
+      const containerEl = document.querySelector('.relative.p-\\[1500px\\]')
+
+      if (!containerEl) return
+
+      // Get container's offset to account for its position
+      const containerOffsetLeft = containerEl.offsetLeft
+      const containerOffsetTop = containerEl.offsetTop
+
+      // Get positions relative to the container itself, ignoring transforms
+      Object.entries(cardRefs.current).forEach(([skillId, ref]) => {
+        if (ref) {
+          // Get the absolute position within the page
+          let element = ref
+          let offsetX = 0
+          let offsetY = 0
+
+          // Accumulate all offsets up the tree
+          while (element) {
+            offsetX += element.offsetLeft
+            offsetY += element.offsetTop
+            element = element.offsetParent
+          }
+
+          // Subtract the container's offset to get position relative to container
+          offsetX -= containerOffsetLeft
+          offsetY -= containerOffsetTop
+
+          // Get actual width/height from the element
+          const width = ref.offsetWidth
+          const height = ref.offsetHeight
+
+          positions[skillId] = {
+            x: offsetX + width / 2,
+            y: offsetY + height / 2,
+            top: offsetY,
+            bottom: offsetY + height
+          }
+        }
+      })
+      setCardPositions(positions)
+    }
+
+    // Initial calculation
+    updatePositions()
+
+    // Recalculate on window resize or after a short delay to ensure layout is stable
+    const timeoutId = setTimeout(updatePositions, 100)
+    window.addEventListener('resize', updatePositions)
+
+    return () => {
+      clearTimeout(timeoutId)
+      window.removeEventListener('resize', updatePositions)
+    }
+  }, [allSkills, skillsByLevel])
 
   if (!processedData) return null
 
@@ -110,32 +219,44 @@ function Tree({ processedData, topic = '' }) {
       >
         <TransformComponent wrapperStyle={{ width: '100vw', height: '100vh' }}>
           <div className="relative p-[1500px] flex flex-col items-center">
+            {/* DEPENDENCY LINES LAYER */}
+            <DependencyLines
+              skills={allSkills}
+              cardPositions={cardPositions}
+              hoveredSkillId={hoveredSkillId}
+            />
+
             {levels.map((startNode, levelIdx) => {
               const currentSkills = skillsByLevel.get(startNode.levelIndex) ?? []
 
               return (
-                <div key={startNode.id} className="flex flex-col items-center w-full">
+                <div key={startNode.id} className="flex flex-col items-center w-full mb-16">
                   {/* LEVEL TITLE BOX */}
-                  <div className="z-20 px-8 py-2.5 bg-[#1e293b] border border-blue-500/40 rounded-md text-white font-black text-sm uppercase tracking-widest shadow-2xl min-w-[200px] text-center">
+                  <div className="z-20 px-8 py-2.5 bg-[#1e293b] border border-blue-500/40 rounded-md text-white font-black text-sm uppercase tracking-widest shadow-2xl min-w-[200px] text-center mb-16">
                     {startNode.name || `${startNode.difficulty}`}
                   </div>
-
-                  {/* BRANCHING LINES */}
-                  <BranchingLines count={currentSkills.length} />
 
                   {/* SKILL CARDS ROW */}
                   <div className="flex gap-[40px] z-20">
                     {currentSkills.map((skill) => {
                       const isDone = doneSkillIds.has(skill.id)
+                      const isRelated = relatedSkills.has(skill.id)
                       return (
                         <div
                           key={skill.id}
+                          ref={(el) => {
+                            if (el) cardRefs.current[skill.id] = el
+                          }}
                           onClick={() => setSelectedSkillId(skill.id)}
+                          onMouseEnter={() => setHoveredSkillId(skill.id)}
+                          onMouseLeave={() => setHoveredSkillId(null)}
                           style={{ width: `${CARD_WIDTH}px` }}
                           className={`group p-5 rounded-xl border-2 transition-all duration-300 hover:-translate-y-2 cursor-pointer ${
                             isDone
                               ? 'border-green-500 bg-green-950/40 shadow-[0_0_25px_rgba(34,197,94,0.2)]'
-                              : 'border-blue-500/50 bg-[#1e293b] shadow-xl'
+                              : isRelated
+                                ? 'border-blue-400 bg-[#1e3a5f] shadow-[0_0_20px_rgba(59,130,246,0.3)]'
+                                : 'border-blue-500/50 bg-[#1e293b] shadow-xl'
                           }`}
                         >
                           {/* HIGH VISIBILITY TEXT */}
@@ -153,13 +274,6 @@ function Tree({ processedData, topic = '' }) {
                       )
                     })}
                   </div>
-
-                  {/* MERGING LINES TO NEXT LEVEL */}
-                  {levelIdx < levels.length - 1 ? (
-                    <MergingLines count={currentSkills.length} />
-                  ) : (
-                    <div className="h-32" />
-                  )}
                 </div>
               )
             })}

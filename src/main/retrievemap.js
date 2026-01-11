@@ -288,7 +288,6 @@ const encodeVideoToBase64 = async (videoPath) => {
 };
 
 export const gradeDemonstrativeQuestion = async (question, videoPath, skill, topic) =>{
-    const videoPath = 'path/to/your/video.mp4';
     const base64Video = await encodeVideoToBase64(videoPath);
 
     const response = await openRouter.chat.send({
