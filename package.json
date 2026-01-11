@@ -19,7 +19,10 @@
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.2",
-    "@electron-toolkit/utils": "^4.0.0"
+    "@electron-toolkit/utils": "^4.0.0",
+    "electron-store": "^11.0.2",
+    "googleapis": "^170.0.0",
+    "open": "^11.0.0"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config": "^2.1.0",
