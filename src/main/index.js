@@ -4,7 +4,7 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
 import { createDb } from './db'
-import { generateRoadmap } from './retrievemap'
+import { generateKnowledgeQuestion, generateRoadmap, gradeKnowledgeQuestion } from './retrievemap'
 let db
 
 function createWindow() {
@@ -92,4 +92,16 @@ ipcMain.handle('generate-roadmap', async (_, payload) => {
   const { topic, level_description, end_goal } = payload
 
   return await generateRoadmap(db, topic, level_description, end_goal)
+})
+
+ipcMain.handle('generate-knowledge-question', async (_, payload) => {
+  const { skill, topic } = payload
+
+  return await generateKnowledgeQuestion(skill, topic)
+})
+
+ipcMain.handle('grade-question', async (_, payload) => {
+  const { question, answer, skill, topic } = payload
+
+  return await gradeKnowledgeQuestion(question, answer, skill, topic)
 })

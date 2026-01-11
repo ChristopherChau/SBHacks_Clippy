@@ -3,7 +3,10 @@ import { electronAPI } from '@electron-toolkit/preload'
 
 // Custom APIs for renderer
 const api = {
-  generateRoadmap: (payload) => ipcRenderer.invoke('generate-roadmap', payload)
+  generateRoadmap: (payload) => ipcRenderer.invoke('generate-roadmap', payload),
+  generateKnowledgeQuestion: (payload) =>
+    ipcRenderer.invoke('generate-knowledge-question', payload),
+  gradeKnowledgeQuestion: (payload) => ipcRenderer.invoke('grade-question', payload)
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

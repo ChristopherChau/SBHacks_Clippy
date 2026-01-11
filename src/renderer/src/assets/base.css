@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,400..700;1,400..700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,400..700;1,400..700&display=swap');
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
@@ -85,6 +86,15 @@
 
   --font-awesome: "STIX Two Text", serif;
 
+  /* Custom palette */
+  --color-tea-green: #e2f1af;
+  --color-light-gold: #e3d888;
+  --color-olive-wood: #84714f;
+  --color-chocolate-plum: #5a3a31;
+  --color-dark-coffee: #31231e;
+
+  --font-awesome: "STIX Two Text", serif;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -143,6 +153,8 @@ ul {
 }
 
 body {
+  background:#020617;
+  color: rgba(255, 255, 245, 0.86);
   font-family:
     Inter,
     -apple-system,

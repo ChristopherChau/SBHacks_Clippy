@@ -1,8 +1,15 @@
 import { useState, useRef, useEffect, useLayoutEffect } from 'react'
 import { ArrowRight } from 'lucide-react'
 
-export default function FloatingInput({ onSubmit, placeholders = ['What do you want to learn?', 'What do you already know?', 'What is your goal?'] }) {
-  const [values, setValues] = useState(['rust programming', 'data structures and algorithims', 'to create a custom websocket'])
+export default function FloatingInput({
+  onSubmit,
+  placeholders = ['What do you want to learn?', 'What do you already know?', 'What is your goal?']
+}) {
+  const [values, setValues] = useState([
+    'rust programming',
+    'data structures and algorithims',
+    'to create a custom websocket'
+  ])
   const [focusedIndex, setFocusedIndex] = useState(0)
   const [caretPositions, setCaretPositions] = useState([0, 0, 0])
   const [isExiting, setIsExiting] = useState(false)
@@ -50,11 +57,8 @@ export default function FloatingInput({ onSubmit, placeholders = ['What do you w
   }
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center p-6 z-9999">
-      <form
-        onSubmit={handleSubmit}
-        className="w-[80vw] max-w-[1200px] p-10 font-serif"
-      >
+    <div className="fixed inset-0 flex items-center justify-center p-6 invert">
+      <form onSubmit={handleSubmit} className="w-[80vw] max-w-[1200px] p-10 font-serif">
         {/* Heading with clip mask */}
         <div className="overflow-hidden mb-12">
           <h1
@@ -62,7 +66,8 @@ export default function FloatingInput({ onSubmit, placeholders = ['What do you w
             style={{
               transform: isExiting ? 'translateY(-100%)' : 'translateY(0)',
               opacity: isExiting ? 0 : 1,
-              transition: 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1)'
+              transition:
+                'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1)'
             }}
           >
             I want to learn...
@@ -77,7 +82,8 @@ export default function FloatingInput({ onSubmit, placeholders = ['What do you w
                 style={{
                   transform: isExiting ? 'translateX(-100%)' : 'translateX(0)',
                   opacity: isExiting ? 0 : 1,
-                  transition: 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1)'
+                  transition:
+                    'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1)'
                 }}
               >
                 {/* Hidden span to measure text width */}
