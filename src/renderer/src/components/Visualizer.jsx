@@ -1,23 +1,22 @@
 import Tree from './Tree'
 import { useState, useEffect, useRef } from 'react'
 
-// const response = await generateRoadmap("rust programming", "I know computer science conceptions like data structures but I have no knowledge on how to use rust", "I want to create a custom socket in rust")
-// const Visualizer = ({ data }) => {
-const Visualizer = () => {
+// eslint-disable-next-line react/prop-types
+const Visualizer = ({ inputData }) => {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const generated = useRef(false)
+
   useEffect(() => {
     const fetchRoadmap = async () => {
       try {
-        if (generated.current == false) {
+        if (generated.current == false && inputData) {
           generated.current = true
           const response = await window.api.generateRoadmap({
-            topic: 'rust programming',
-            level_description:
-              'I know computer science concepts like data structures but I have no knowledge on how to use rust',
-            end_goal: 'I want to create a custom socket in rust'
+            topic: inputData[0],
+            level_description: inputData[1],
+            end_goal: inputData[2]
           })
           setData({ levels: response })
         }
@@ -32,7 +31,7 @@ const Visualizer = () => {
 
     fetchRoadmap()
     console.log('fetched')
-  }, [])
+  }, [inputData])
 
   useEffect(() => {
     console.log(data)
