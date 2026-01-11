@@ -6,7 +6,7 @@ export const searchCache = sqliteTable('search_cache', {
   response: text('response').notNull(),
   createdAt: integer('created_at', { mode: 'timestamp' })
     .notNull()
-    .$defaultFn(() => new Date()),
+    .$defaultFn(() => new Date())
 })
 
 export const allocationCache = sqliteTable('allocation_cache', {
@@ -15,7 +15,7 @@ export const allocationCache = sqliteTable('allocation_cache', {
   response: text('response').notNull(),
   createdAt: integer('created_at', { mode: 'timestamp' })
     .notNull()
-    .$defaultFn(() => new Date()),
+    .$defaultFn(() => new Date())
 })
 
 export const contentCache = sqliteTable('content_cache', {
@@ -24,5 +24,5 @@ export const contentCache = sqliteTable('content_cache', {
   response: text('response').notNull(),
   createdAt: integer('created_at', { mode: 'timestamp' })
     .notNull()
-    .$defaultFn(() => new Date()),
+    .$defaultFn(() => new Date())
 })
