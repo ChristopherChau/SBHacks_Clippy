@@ -75,8 +75,8 @@ const allocationSkillAgent = async (topic, tiers) => {
 
   // 1. Find overall list of technical skill
   const skillPrompt = `Search and find a list of technical skills related to learning the skill of ${topic}.
-    Output the format in { skills: [...]}. Include skills used across all people of varying experience for the skill.
-    For example for rock climbing one could learn crimping, hip positioning, etc.`
+    Include skills used across all people of varying experience for the skill. For example for rock climbing one could learn crimping, hip positioning, etc.
+    Output the format in { skills: [...]}. `
   const skillResponse = await openRouter.chat.send({
     model: model,
     messages: [
@@ -92,11 +92,12 @@ const allocationSkillAgent = async (topic, tiers) => {
   })
   const skillTarget = JSON.parse(skillResponse.choices[0].message.content)
 
-  // 2. Catergorise which skill belongs to which difficulty (search) (5-6 max), and determine percentage time for each skill
-  const catergorizationPrompt = `For the topic of ${topic} consider the skill list : ${skillTarget.skill} and the tiers/ranks ${tiers}.
-    Search the web for context on each tier and for each tier, place skills that would necessary and optimal to learn at that skill. Skills
-    don't have to be uniquely placed within a tier and can exist within multiple tiers. Output the format in
-    { tier1: [skill1, skill4, ...], tier2: [skill2, skill4, ...], ...}`
+  // 2. Catergorise which skill belongs to which difficulty (search) 
+  const catergorizationPrompt = `For the topic of ${topic} consider the skill list: ${skillTarget.skill} and the tiers/ranks: ${tiers}.
+    Search the web for context on each tier and for each tier, place skills that would necessary and optimal to learn at that skill. 
+    Also figure out which skills depend on which skill, with the condition that skills from later tiers depend on skills on earlier
+    tiers. Output the format in
+    { layering: { tier1: [skill1, skill4, ...], tier2: [skill2, skill4, ...], ...}, dependencies: { skill1: [], skill2: [skill1, skill3], ...} }`
   const catergorizationResponse = await openRouter.chat.send({
     model: model,
     messages: [
@@ -111,10 +112,10 @@ const allocationSkillAgent = async (topic, tiers) => {
     }
   })
   const catergorizationTarget = JSON.parse(catergorizationResponse.choices[0].message.content)
-
   const response = {
-    roadmap: catergorizationTarget,
-    node_skills: [...new Set(Object.values(catergorizationTarget).flat())]
+    roadmap: catergorizationTarget['layering'],
+    node_skills: [...new Set(Object.values(catergorizationTarget['layering']).flat())],
+    dependencies: catergorizationTarget['dependencies'],
   }
 
   // Store in cache
@@ -125,7 +126,7 @@ const allocationSkillAgent = async (topic, tiers) => {
   })
 
   console.log('Cached response for allocation:', topic)
-  return response
+  return response;
 }
 
 // Find content / tips for each skill
@@ -178,9 +179,9 @@ const contentSkill = async (topic, skills) => {
 }
 
 export const generateRoadmap = async (topic, level_description, end_goal) => {
-  const response = await searchOpenRouter(topic, level_description, end_goal)
-  const { roadmap, node_skills } = await allocationSkillAgent(topic, response.ranking)
-  const contentResponse = await contentSkill(topic, node_skills)
+  const response = await searchOpenRouter(topic, level_description, end_goal);
+  const { roadmap, node_skills, dependencies } = await allocationSkillAgent(topic, response.ranking);
+  const contentResponse = await contentSkill(topic, node_skills);
 
   const levels = []
   const keys = Object.keys(roadmap)
@@ -197,7 +198,8 @@ export const generateRoadmap = async (topic, level_description, end_goal) => {
         tips: contentResponse[skills[j]].tips,
         url: contentResponse[skills[j]].url,
         description: contentResponse[skills[j]].description,
-        pass: 0
+        pass: 0,
+        dependencies: dependencies[skills[j]],
       }
       parsedSkills.push(parsedSkill)
     }

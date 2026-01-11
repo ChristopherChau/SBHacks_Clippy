@@ -48,7 +48,9 @@ app.whenReady().then(async () => {
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
 
-  console.log(response[0].skills[0]);
+  //console.log(response[0].skills[0]);
+  const response = await generateRoadmap("pytorch programming", "I understand the theory for attention models", "I want to be able to implement hyper-connections from scratch");
+  console.log(response[0].skills)
 
   // const question = await generateKnowledgeQuestion("Cargo basics", "rust programming");
   // Explain the difference between `cargo build` and `cargo build --release`, specifically addressing how each command handles compiler optimizations and the resulting executable's performance.
