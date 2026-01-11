@@ -1,126 +1,42 @@
 import Tree from './Tree'
+import { useState, useEffect } from 'react'
 
-// Static test input
-const STATIC_TEST_INPUT = {
-  levels: [
-    {
-      difficulty: 0,
-      skills: [
-        {
-          id: 'd0-s0',
-          name: 'Variables',
-          contentType: 'reading',
-          youtubeUrl: 'https://www.youtube.com/results?search_query=javascript+variables',
-          articleUrl:
-            'https://developer.mozilla.org/en-US/docs/Learn/JavaScript/First_steps/Variables',
-          summary: 'Test'
-        },
-        {
-          id: 'd0-s1',
-          name: 'Basic Types',
-          contentType: 'exercise',
-          youtubeUrl: 'https://www.youtube.com/results?search_query=javascript+types',
-          articleUrl: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures'
-        },
-        {
-          id: 'd0-s2',
-          name: 'Operators',
-          contentType: 'video',
-          youtubeUrl: 'https://www.youtube.com/results?search_query=javascript+operators',
-          articleUrl:
-            'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Expressions_and_operators'
-        }
-      ]
-    },
-    {
-      difficulty: 1,
-      skills: [
-        {
-          id: 'd1-s0',
-          name: 'Functions',
-          contentType: 'video',
-          youtubeUrl: 'https://www.youtube.com/results?search_query=javascript+functions',
-          articleUrl: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Functions'
-        },
-        {
-          id: 'd1-s1',
-          name: 'Scope',
-          contentType: 'exercise',
-          youtubeUrl: 'https://www.youtube.com/results?search_query=javascript+scope',
-          articleUrl: 'https://developer.mozilla.org/en-US/docs/Glossary/Scope'
-        },
-        {
-          id: 'd1-s2',
-          name: 'Closures',
-          contentType: 'reading',
-          youtubeUrl: 'https://www.youtube.com/results?search_query=javascript+closures',
-          articleUrl: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures'
-        },
-        {
-          id: 'd1-s3',
-          name: 'Arrow Functions',
-          contentType: 'exercise',
-          youtubeUrl: 'https://www.youtube.com/results?search_query=javascript+arrow+functions',
-          articleUrl:
-            'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions'
-        }
-      ]
-    },
-    {
-      difficulty: 2,
-      skills: [
-        {
-          id: 'd2-s0',
-          name: 'Objects',
-          contentType: 'reading',
-          youtubeUrl: 'https://www.youtube.com/results?search_query=javascript+objects',
-          articleUrl:
-            'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Working_with_objects'
-        },
-        {
-          id: 'd2-s1',
-          name: 'Arrays',
-          contentType: 'video',
-          youtubeUrl: 'https://www.youtube.com/results?search_query=javascript+arrays',
-          articleUrl:
-            'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array'
-        },
-        {
-          id: 'd2-s2',
-          name: 'Array Methods',
-          contentType: 'exercise',
-          youtubeUrl: 'https://www.youtube.com/results?search_query=javascript+array+methods',
-          articleUrl:
-            'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array#instance_methods'
-        }
-      ]
-    },
-    {
-      difficulty: 3,
-      skills: [
-        {
-          id: 'd3-s0',
-          name: 'Async/Await',
-          contentType: 'video',
-          youtubeUrl: 'https://www.youtube.com/results?search_query=javascript+async+await',
-          articleUrl:
-            'https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Asynchronous/Promises'
-        },
-        {
-          id: 'd3-s1',
-          name: 'Promises',
-          contentType: 'reading',
-          youtubeUrl: 'https://www.youtube.com/results?search_query=javascript+promises',
-          articleUrl:
-            'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise'
-        }
-      ]
+// const response = await generateRoadmap("rust programming", "I know computer science conceptions like data structures but I have no knowledge on how to use rust", "I want to create a custom socket in rust")
+// const Visualizer = ({ data }) => {
+const Visualizer = () => {
+  const [data, setData] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  useEffect(() => {
+    const fetchRoadmap = async () => {
+      try {
+        const response = await window.api.generateRoadmap({
+          topic: 'rust programming',
+          level_description:
+            'I know computer science concepts like data structures but I have no knowledge on how to use rust',
+          end_goal: 'I want to create a custom socket in rust'
+        })
+
+        setData({ levels: response })
+      } catch (err) {
+        console.error(err)
+        setError('Failed to generate roadmap')
+        console.log(err)
+      } finally {
+        setLoading(false)
+      }
     }
-  ]
-}
 
-// eslint-disable-next-line react/prop-types
-const Visualizer = ({ data = STATIC_TEST_INPUT }) => {
+    if (!window.api?.generateRoadmap) {
+      setError('Not running in Electron / preload not loaded (window.api missing).')
+      setLoading(false)
+      return
+    }
+
+    fetchRoadmap()
+    console.log('fetched')
+  }, [])
+
   // Validate input structure
   const validateInput = (input) => {
     if (!input || !input.levels || !Array.isArray(input.levels)) {
@@ -192,16 +108,16 @@ const Visualizer = ({ data = STATIC_TEST_INPUT }) => {
     return processed
   }
 
-  if (!validateInput(data)) {
-    console.error('Invalid input to component')
-  }
-
-  const processedData = processData(data)
+  const processedData = data && validateInput(data) ? processData(data) : null
 
   return (
     <>
       <div>
-        {processedData ? (
+        {loading ? (
+          <div>Generating roadmap…</div>
+        ) : error ? (
+          <div>{error}</div>
+        ) : processedData ? (
           <div>
             <h3 className="text-lg font-bold mb-4">
               <p>Starting point: {processedData.startNodes[0]?.id ?? 'n/a'}</p>
@@ -219,4 +135,3 @@ const Visualizer = ({ data = STATIC_TEST_INPUT }) => {
 }
 
 export default Visualizer
-export { STATIC_TEST_INPUT }

@@ -11,15 +11,16 @@ if (process.contextIsolated) {
   try {
     contextBridge.exposeInMainWorld('electron', electronAPI)
 
-    // CHANGE Testing GCal
     contextBridge.exposeInMainWorld('api', {
-      exportRoadmap: (data) => ipcRenderer.invoke('calendar:export-roadmap', data),
-      createCalendarEvent: (data) => ipcRenderer.invoke('calendar:create-event', data)
+      generateRoadmap: (payload) => ipcRenderer.invoke('generate-roadmap', payload)
     })
   } catch (error) {
     console.error(error)
   }
 } else {
   window.electron = electronAPI
-  window.api = api
+  window.api = {
+    ...api,
+    generateRoadmap: (payload) => ipcRenderer.invoke('generate-roadmap', payload)
+  }
 }

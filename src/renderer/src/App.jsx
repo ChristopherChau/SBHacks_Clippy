@@ -1,8 +1,10 @@
-import Visualizer from './components/Visualizer'
+/* eslint-disable no-unused-vars */
+import Visualizer from "./components/Visualizer"
 
 function App() {
   return (
     <>
+      <div>test</div>
       <Visualizer />
     </>
   )

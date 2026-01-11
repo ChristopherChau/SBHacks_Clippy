@@ -1,0 +1,3 @@
+function generateQuestion(topic) {
+  
+}
