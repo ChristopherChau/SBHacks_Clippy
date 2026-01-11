@@ -1,5 +1,5 @@
 import Tree from './Tree'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 // const response = await generateRoadmap("rust programming", "I know computer science conceptions like data structures but I have no knowledge on how to use rust", "I want to create a custom socket in rust")
 // const Visualizer = ({ data }) => {
@@ -7,17 +7,20 @@ const Visualizer = () => {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const generated = useRef(false)
   useEffect(() => {
     const fetchRoadmap = async () => {
       try {
-        const response = await window.api.generateRoadmap({
-          topic: 'rust programming',
-          level_description:
-            'I know computer science concepts like data structures but I have no knowledge on how to use rust',
-          end_goal: 'I want to create a custom socket in rust'
-        })
-
-        setData({ levels: response })
+        if (generated.current == false) {
+          generated.current = true
+          const response = await window.api.generateRoadmap({
+            topic: 'rust programming',
+            level_description:
+              'I know computer science concepts like data structures but I have no knowledge on how to use rust',
+            end_goal: 'I want to create a custom socket in rust'
+          })
+          setData({ levels: response })
+        }
       } catch (err) {
         console.error(err)
         setError('Failed to generate roadmap')
@@ -27,15 +30,13 @@ const Visualizer = () => {
       }
     }
 
-    if (!window.api?.generateRoadmap) {
-      setError('Not running in Electron / preload not loaded (window.api missing).')
-      setLoading(false)
-      return
-    }
-
     fetchRoadmap()
     console.log('fetched')
   }, [])
+
+  useEffect(() => {
+    console.log(data)
+  }, [data])
 
   // Validate input structure
   const validateInput = (input) => {
@@ -45,17 +46,13 @@ const Visualizer = () => {
     }
 
     for (const level of input.levels) {
-      if (typeof level.difficulty !== 'number') {
-        console.error('Invalid level: difficulty must be a number')
-        return false
-      }
       if (!Array.isArray(level.skills)) {
         console.error('Invalid level: skills must be an array')
         return false
       }
       for (const skill of level.skills) {
-        if (!skill.id || !skill.name || !skill.contentType) {
-          console.error('Invalid skill: missing required fields (id, name, contentType)')
+        if (!skill.id) {
+          console.error('Invalid skill: missing required field id')
           return false
         }
       }

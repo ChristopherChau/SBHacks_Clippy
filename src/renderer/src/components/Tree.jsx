@@ -58,11 +58,14 @@ function Tree({ processedData }) {
 
           return (
             <div key={startNode.id} className="flex flex-col items-center">
-              <div className="w-24 h-24 rounded-full flex items-center justify-center text-center p-2.5 leading-tight text-xs font-bold border-2 border-blue-700/85 bg-blue-700/16">{`Start ${startNode.levelIndex}`}</div>
+              <div className="w-24 h-24 rounded-full flex items-center justify-center text-center p-2.5 leading-tight text-xs font-bold border-2 border-blue-700/85 bg-blue-700/16">{`${startNode.difficulty}`}</div>
               <div className="w-0.5 h-2.5 bg-slate-400/70" />
               <div className="relative flex justify-center gap-5 py-5 before:content-[''] before:absolute before:left-12 before:right-12 before:h-0.5 before:bg-slate-400/70 before:top-0 after:content-[''] after:absolute after:left-12 after:right-12 after:h-0.5 after:bg-slate-400/70 after:bottom-0">
                 {skills.map((skill) => (
-                  <div key={skill.id} className="relative before:content-[''] before:absolute before:left-1/2 before:-translate-x-1/2 before:-top-5 before:h-5 before:w-0.5 before:bg-slate-400/70 after:content-[''] after:absolute after:left-1/2 after:-translate-x-1/2 after:-bottom-5 after:h-5 after:w-0.5 after:bg-slate-400/70">
+                  <div
+                    key={skill.id}
+                    className="relative before:content-[''] before:absolute before:left-1/2 before:-translate-x-1/2 before:-top-5 before:h-5 before:w-0.5 before:bg-slate-400/70 after:content-[''] after:absolute after:left-1/2 after:-translate-x-1/2 after:-bottom-5 after:h-5 after:w-0.5 after:bg-slate-400/70"
+                  >
                     <div
                       className={`w-24 h-24 rounded-full flex items-center justify-center text-center p-2.5 leading-tight text-xs font-semibold border-2 cursor-pointer ${
                         doneSkillIds.has(skill.id)

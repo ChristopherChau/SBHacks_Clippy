@@ -203,7 +203,7 @@ export const generateRoadmap = async (db, topic, level_description, end_goal) =>
       parsedSkills.push(parsedSkill)
     }
     const layer = {
-      difficulty: i,
+      difficulty: keys[i],
       skills: parsedSkills
     }
     levels.push(layer)
