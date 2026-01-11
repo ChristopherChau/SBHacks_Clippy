@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import Visualizer from "./components/Visualizer"
+import Visualizer from './components/Visualizer'
 
 function App() {
   return (
