@@ -117,7 +117,7 @@ function Tree({ processedData }) {
                 <div key={startNode.id} className="flex flex-col items-center w-full">
                   {/* LEVEL TITLE BOX */}
                   <div className="z-20 px-8 py-2.5 bg-[#1e293b] border border-blue-500/40 rounded-md text-white font-black text-sm uppercase tracking-widest shadow-2xl min-w-[200px] text-center">
-                    {startNode.name || `Level ${startNode.difficulty}`}
+                    {startNode.name || `${startNode.difficulty}`}
                   </div>
 
                   {/* BRANCHING LINES */}
