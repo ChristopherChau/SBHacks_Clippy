@@ -39,8 +39,8 @@ function Tree({ processedData }) {
   if (!processedData) return null
 
   return (
-    <div className="tree-scroll">
-      <div className="tree">
+    <div className="w-full overflow-auto p-4">
+      <div className="flex flex-col items-center gap-0">
         <ResourceCard
           skill={selectedSkill}
           isDone={selectedSkill ? doneSkillIds.has(selectedSkill.id) : false}
@@ -57,14 +57,18 @@ function Tree({ processedData }) {
           const skills = skillsByLevel.get(levelIndex) ?? []
 
           return (
-            <div key={startNode.id} className="tree-level">
-              <div className="node node--start">{`Start ${startNode.levelIndex}`}</div>
-              <div className="tree-start-to-skills" />
-              <div className="tree-skill-row ">
+            <div key={startNode.id} className="flex flex-col items-center">
+              <div className="w-24 h-24 rounded-full flex items-center justify-center text-center p-2.5 leading-tight text-xs font-bold border-2 border-blue-700/85 bg-blue-700/16">{`Start ${startNode.levelIndex}`}</div>
+              <div className="w-0.5 h-2.5 bg-slate-400/70" />
+              <div className="relative flex justify-center gap-5 py-5 before:content-[''] before:absolute before:left-12 before:right-12 before:h-0.5 before:bg-slate-400/70 before:top-0 after:content-[''] after:absolute after:left-12 after:right-12 after:h-0.5 after:bg-slate-400/70 after:bottom-0">
                 {skills.map((skill) => (
-                  <div key={skill.id} className="tree-skill-wrap">
+                  <div key={skill.id} className="relative before:content-[''] before:absolute before:left-1/2 before:-translate-x-1/2 before:-top-5 before:h-5 before:w-0.5 before:bg-slate-400/70 after:content-[''] after:absolute after:left-1/2 after:-translate-x-1/2 after:-bottom-5 after:h-5 after:w-0.5 after:bg-slate-400/70">
                     <div
-                      className={`node node--skill ${doneSkillIds.has(skill.id) ? 'node--done' : ''}`}
+                      className={`w-24 h-24 rounded-full flex items-center justify-center text-center p-2.5 leading-tight text-xs font-semibold border-2 cursor-pointer ${
+                        doneSkillIds.has(skill.id)
+                          ? 'border-green-600/95 bg-green-600/28'
+                          : 'border-sky-500/85 bg-sky-500/14'
+                      }`}
                       role="button"
                       tabIndex={0}
                       onClick={() => setSelectedSkillId(skill.id)}
@@ -74,7 +78,7 @@ function Tree({ processedData }) {
                   </div>
                 ))}
               </div>
-              {idx < levels.length - 1 ? <div className="tree-bridge" /> : null}
+              {idx < levels.length - 1 ? <div className="w-0.5 h-2.5 bg-slate-400/70" /> : null}
             </div>
           )
         })}

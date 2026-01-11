@@ -203,7 +203,7 @@ const Visualizer = ({ data = STATIC_TEST_INPUT }) => {
       <div>
         {processedData ? (
           <div>
-            <h3>
+            <h3 className="text-lg font-bold mb-4">
               <p>Starting point: {processedData.startNodes[0]?.id ?? 'n/a'}</p>
               <p>Difficulty Levels: {processedData.startNodes.length}</p>
               <p>Tasks needed to complete: {processedData.skillNodes.length}</p>
