@@ -4,6 +4,7 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
 import { initDb } from './db'
+import { generateRoadmap } from './retrievemap'
 
 function createWindow() {
   // Create the browser window.
