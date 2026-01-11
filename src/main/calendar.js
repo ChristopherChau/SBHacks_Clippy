@@ -1,5 +1,5 @@
 import { google } from 'googleapis'
-import { shell } from 'electron'
+import { shell, BrowserWindow } from 'electron'
 import Store from 'electron-store'
 import http from 'http'
 import url from 'url'
@@ -24,20 +24,41 @@ async function getAuthenticatedClient() {
     scope: ['https://www.googleapis.com/auth/calendar.events']
   })
 
-  await shell.openExternal(authUrl)
+  const authWindow = new BrowserWindow({
+    width: 600,
+    height: 800,
+    show: true,
+    alwaysOnTop: true,
+    autoHideMenuBar: true,
+    webPreferences: {
+      nodeIntegration: false
+    }
+  })
 
-  const tokens = await new Promise((resolve) => {
+  authWindow.loadURL(authUrl)
+
+  const tokens = await new Promise((resolve, reject) => {
     const server = http
       .createServer(async (req, res) => {
         if (req.url.includes('/?code=')) {
           const code = new url.URL(req.url, REDIRECT_URI).searchParams.get('code')
-          res.end('Authenticated! You can close this window.')
+          if (!authWindow.isDestroyed()) authWindow.close()
+          res.end('Success! You can return to the app.')
           server.close()
-          const { tokens } = await oauth2Client.getToken(code)
-          resolve(tokens)
+
+          try {
+            const { tokens } = await oauth2Client.getToken(code)
+            resolve(tokens)
+          } catch (e) {
+            reject(e)
+          }
         }
       })
       .listen(3000)
+
+    authWindow.on('closed', () => {
+      server.close()
+    })
   })
 
   oauth2Client.setCredentials(tokens)
