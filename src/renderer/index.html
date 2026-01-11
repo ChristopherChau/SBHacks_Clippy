@@ -2,19 +2,21 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>Electron</title>
+    <title>Road Runner</title>
     <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:"
     />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
   </head>
 
   <body
-    class="flex items-center justify-center bg-cover select-none"
-    style="background-image: url('./src/assets/wavy-lines.svg')"
+    class="flex items-center justify-center select-none "
   >
-    <div id="root" class="flex items-center justify-center flex-col mb-20"></div>
+    <div id="root" class="flex items-center justify-center flex-col mb-20 "></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

@@ -2,7 +2,8 @@ import Tree from './Tree'
 import Spinning from './Spinning'
 import { useState, useEffect, useRef } from 'react'
 
-const Visualizer = () => {
+// eslint-disable-next-line react/prop-types
+const Visualizer = ({ inputData }) => {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -24,10 +25,9 @@ const Visualizer = () => {
         await new Promise((resolve) => setTimeout(resolve, 2000))
 
         const response = await window.api.generateRoadmap({
-          topic: 'rust programming',
-          level_description:
-            'I know computer science concepts like data structures but I have no knowledge on how to use rust',
-          end_goal: 'I want to create a custom socket in rust'
+          topic: inputData[0],
+          level_description: inputData[1],
+          end_goal: inputData[2]
         })
 
         console.log('Raw API Response:', response)
@@ -48,7 +48,7 @@ const Visualizer = () => {
     }
 
     fetchRoadmap()
-  }, [])
+  }, [inputData])
 
   const processData = (input) => {
     if (!validateInput(input)) return null

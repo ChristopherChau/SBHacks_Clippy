@@ -53,9 +53,9 @@ app.whenReady().then(async () => {
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
 
-  // const response = await generateRoadmap("rust programming", "I know computer science conceptions like data structures but I have no knowledge on how to use rust", "I want to create a custom socket in rust")
+  // const response = await generateRoadmap(db, "rust programming", "I know computer science conceptions like data structures but I have no knowledge on how to use rust", "I want to create a custom socket in rust")
 
-  // console.log(response);
+  // console.log(response[1].skills);
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.

@@ -74,9 +74,9 @@ const allocationSkillAgent = async (db, topic, tiers) => {
   }
 
   // 1. Find overall list of technical skill
-  const skillPrompt = `Search and find a list of technical skills related to learning the skill of ${topic}.
+  const skillPrompt = `Search and find a list of technical skills related to learning the topic of ${topic}.
     Include skills used across all people of varying experience for the skill. For example for rock climbing one could learn crimping, hip positioning, etc.
-    Output the format in { skills: [...]}. `
+    For each topic choose between 4-7 skills. Output the format in { skills: [...]}. `
   const skillResponse = await openRouter.chat.send({
     model: model,
     messages: [
