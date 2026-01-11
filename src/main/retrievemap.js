@@ -1,7 +1,7 @@
 import dotenv from 'dotenv'
 import { OpenRouter } from '@openrouter/sdk'
 import { eq } from 'drizzle-orm'
-import { db, searchCache, allocationCache, contentCache } from './db/index.js'
+import { searchCache, allocationCache, contentCache } from './db/index.js'
 
 dotenv.config()
 
@@ -12,7 +12,7 @@ const openRouter = new OpenRouter({
 const model = 'google/gemini-3-flash-preview'
 
 // Search for different categories (if possible) or generic beginner, intermediate, advanced
-const searchOpenRouter = async (skill, level_description, end_goal) => {
+const searchOpenRouter = async (db, skill, level_description, end_goal) => {
   // Check cache first
   const cached = await db.select().from(searchCache).where(eq(searchCache.skill, skill)).get()
 
@@ -57,7 +57,7 @@ const searchOpenRouter = async (skill, level_description, end_goal) => {
 }
 
 // Search for lower-level skill for the target skill and place them into the given tiers
-const allocationSkillAgent = async (topic, tiers) => {
+const allocationSkillAgent = async (db, topic, tiers) => {
   // Create cache key from parameters
   const cacheKey = `${topic}:${JSON.stringify(tiers)}`
 
@@ -92,7 +92,7 @@ const allocationSkillAgent = async (topic, tiers) => {
   })
   const skillTarget = JSON.parse(skillResponse.choices[0].message.content)
 
-  // 2. Catergorise which skill belongs to which difficulty (search) 
+  // 2. Catergorise which skill belongs to which difficulty (search)
   const catergorizationPrompt = `For the topic of ${topic} consider the skill list: ${skillTarget.skill} and the tiers/ranks: ${tiers}.
     Search the web for context on each tier and for each tier, place skills that would necessary and optimal to learn at that skill. 
     Also figure out which skills depend on which skill, with the condition that skills from later tiers depend on skills on earlier
@@ -115,7 +115,7 @@ const allocationSkillAgent = async (topic, tiers) => {
   const response = {
     roadmap: catergorizationTarget['layering'],
     node_skills: [...new Set(Object.values(catergorizationTarget['layering']).flat())],
-    dependencies: catergorizationTarget['dependencies'],
+    dependencies: catergorizationTarget['dependencies']
   }
 
   // Store in cache
@@ -126,11 +126,11 @@ const allocationSkillAgent = async (topic, tiers) => {
   })
 
   console.log('Cached response for allocation:', topic)
-  return response;
+  return response
 }
 
 // Find content / tips for each skill
-const contentSkill = async (topic, skills) => {
+const contentSkill = async (db, topic, skills) => {
   // Create cache key from parameters
   const cacheKey = `${topic}:${JSON.stringify(skills)}`
 
@@ -178,10 +178,14 @@ const contentSkill = async (topic, skills) => {
   return contentTarget
 }
 
-export const generateRoadmap = async (topic, level_description, end_goal) => {
-  const response = await searchOpenRouter(topic, level_description, end_goal);
-  const { roadmap, node_skills, dependencies } = await allocationSkillAgent(topic, response.ranking);
-  const contentResponse = await contentSkill(topic, node_skills);
+export const generateRoadmap = async (db, topic, level_description, end_goal) => {
+  const response = await searchOpenRouter(db, topic, level_description, end_goal)
+  const { roadmap, node_skills, dependencies } = await allocationSkillAgent(
+    db,
+    topic,
+    response.ranking
+  )
+  const contentResponse = await contentSkill(db, topic, node_skills)
 
   const levels = []
   const keys = Object.keys(roadmap)
@@ -199,12 +203,12 @@ export const generateRoadmap = async (topic, level_description, end_goal) => {
         url: contentResponse[skills[j]].url,
         description: contentResponse[skills[j]].description,
         pass: 0,
-        dependencies: dependencies[skills[j]],
+        dependencies: dependencies[skills[j]]
       }
       parsedSkills.push(parsedSkill)
     }
     const layer = {
-      difficulty: i,
+      difficulty: keys[i],
       skills: parsedSkills
     }
     levels.push(layer)
