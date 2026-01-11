@@ -1,13 +1,68 @@
 /* eslint-disable react/prop-types */
 import { XIcon } from 'lucide-react'
 import * as Tabs from '@radix-ui/react-tabs'
-import { useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
-export default function ResourceCard({ skill, isDone, onToggleDone, onClose }) {
-  const tips = Array.isArray(skill.tips) ? skill.tips : []
-  const description = typeof skill.description === 'string' ? skill.description : ''
+// Cache question per (topic + skill) for lifetime of the page
+const knowledgeQuestionCache = new Map()
+
+export default function ResourceCard({ skill, topic = '', isDone, onToggleDone, onClose }) {
+  const skillName = skill?.name ?? ''
+  const tips = useMemo(() => (Array.isArray(skill?.tips) ? skill.tips : []), [skill?.tips])
+  const description = typeof skill?.description === 'string' ? skill.description : ''
   const [activeTab, setActiveTab] = useState('overview')
   const [knowledgeAnswer, setKnowledgeAnswer] = useState('')
+
+  const [question, setQuestion] = useState('')
+  const [isGeneratingQuestion, setIsGeneratingQuestion] = useState(false)
+  const [gradeResult, setGradeResult] = useState(null) // { pass, reason } (from main)
+  const [isGrading, setIsGrading] = useState(false)
+
+  const cacheKey = `${topic}::${skill?.id ?? ''}`
+  const hasRequested = useRef(false)
+
+  useEffect(() => {
+    // Reset UI when opening a different skill
+    hasRequested.current = false
+    setKnowledgeAnswer('')
+    setGradeResult(null)
+    setIsGrading(false)
+    setIsGeneratingQuestion(false)
+    setQuestion(knowledgeQuestionCache.get(cacheKey) ?? '')
+  }, [cacheKey])
+
+  useEffect(() => {
+    if (!skill) return
+    if (activeTab !== 'knowledge') return
+    if (knowledgeQuestionCache.has(cacheKey)) return
+    if (hasRequested.current) return
+    hasRequested.current = true
+
+    if (!window.api?.generateKnowledgeQuestion) {
+      setQuestion('Error: generateKnowledgeQuestion API not available.')
+      return
+    }
+
+    ;(async () => {
+      setIsGeneratingQuestion(true)
+      try {
+        const res = await window.api.generateKnowledgeQuestion({
+          skill: skillName,
+          topic
+        })
+        const q = res?.question ? String(res.question) : String(res)
+        knowledgeQuestionCache.set(cacheKey, q)
+        setQuestion(q)
+      } catch (e) {
+        console.error(e)
+        setQuestion('Failed to generate question.')
+      } finally {
+        setIsGeneratingQuestion(false)
+      }
+    })()
+  }, [activeTab, cacheKey, skill, skillName, topic])
+
+  const canSubmit = useMemo(() => Boolean(knowledgeAnswer.trim()), [knowledgeAnswer])
 
   if (!skill) return null
 
@@ -101,8 +156,15 @@ export default function ResourceCard({ skill, isDone, onToggleDone, onClose }) {
           <Tabs.Content value="knowledge" className="mt-4 flex-1 overflow-y-auto pr-1">
             <div className="text-sm text-slate-300">
               <div className="font-black text-slate-200 mb-2">Knowledge Check</div>
-              <div className="text-slate-400">
-                Question placeholder: (we’ll generate this later)
+              <div className="text-slate-400 whitespace-pre-wrap">
+                {isGeneratingQuestion ? (
+                  <div className="flex items-center gap-2">
+                    <div className="h-4 w-4 rounded-full border-2 border-slate-500 border-t-transparent animate-spin" />
+                    <span>Generating question…</span>
+                  </div>
+                ) : (
+                  question || 'No question yet.'
+                )}
               </div>
 
               <div className="mt-4">
@@ -116,6 +178,17 @@ export default function ResourceCard({ skill, isDone, onToggleDone, onClose }) {
                   onChange={(e) => setKnowledgeAnswer(e.target.value)}
                 />
               </div>
+
+              {gradeResult ? (
+                <div className="mt-4 rounded-lg border border-slate-400/20 bg-slate-950/30 p-3">
+                  <div className="text-xs font-black uppercase tracking-widest text-slate-500 mb-2">
+                    Result
+                  </div>
+                  <div className="text-sm text-slate-200 whitespace-pre-wrap">
+                    {JSON.stringify(gradeResult, null, 2)}
+                  </div>
+                </div>
+              ) : null}
             </div>
           </Tabs.Content>
         </Tabs.Root>
@@ -125,15 +198,28 @@ export default function ResourceCard({ skill, isDone, onToggleDone, onClose }) {
             <button
               type="button"
               className="rounded-lg py-2.5 px-3 border font-black cursor-pointer text-sm border-blue-600/60 bg-blue-600/22"
-              onClick={() => {
-                // placeholder submit handler (wire to real grading later)
-                console.log('Knowledge check submit:', {
-                  skillId: skill.id,
-                  answer: knowledgeAnswer
-                })
+              onClick={async () => {
+                if (!window.api?.gradeKnowledgeQuestion) return
+                setIsGrading(true)
+                setGradeResult(null)
+                try {
+                  const res = await window.api.gradeKnowledgeQuestion({
+                    question,
+                    answer: knowledgeAnswer,
+                    skill: skillName,
+                    topic
+                  })
+                  setGradeResult(res)
+                } catch (e) {
+                  console.error(e)
+                  setGradeResult({ pass: 0, reason: 'Failed to grade.' })
+                } finally {
+                  setIsGrading(false)
+                }
               }}
+              disabled={!canSubmit || isGeneratingQuestion || isGrading}
             >
-              Submit
+              {isGrading ? 'Submitting…' : 'Submit'}
             </button>
           ) : null}
           <button

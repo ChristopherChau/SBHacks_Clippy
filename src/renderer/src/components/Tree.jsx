@@ -53,11 +53,11 @@ const MergingLines = ({ count }) => {
   )
 }
 
-function Tree({ processedData }) {
+function Tree({ processedData, topic = '' }) {
   const [doneSkillIds, setDoneSkillIds] = useState(() => new Set())
   const [selectedSkillId, setSelectedSkillId] = useState(null)
 
-  const allSkills = processedData?.skillNodes ?? []
+  const allSkills = useMemo(() => processedData?.skillNodes ?? [], [processedData])
   const totalTasks = allSkills.length
   const completedTasks = doneSkillIds.size
   const progressPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0
@@ -171,6 +171,7 @@ function Tree({ processedData }) {
       {selectedSkillId && (
         <ResourceCard
           skill={allSkills.find((s) => s.id === selectedSkillId)}
+          topic={topic}
           isDone={doneSkillIds.has(selectedSkillId)}
           onToggleDone={() => {
             setDoneSkillIds((prev) => {
