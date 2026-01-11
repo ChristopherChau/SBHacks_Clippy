@@ -5,6 +5,7 @@ import icon from '../../resources/icon.png?asset'
 
 import { initDb } from './db'
 import { generateRoadmap } from './retrievemap'
+import { generateKnowledgeQuestion, gradeKnowledgeQuestion } from './retrievemap'
 
 function createWindow() {
   // Create the browser window.
@@ -49,7 +50,18 @@ app.whenReady().then(async () => {
   
   const response = await generateRoadmap("rust programming", "I know computer science conceptions like data structures but I have no knowledge on how to use rust", "I want to create a custom socket in rust")
 
-  console.log(response);
+  console.log(response[0].skills[0]);
+
+  // const question = await generateKnowledgeQuestion("Cargo basics", "rust programming");
+  // Explain the difference between `cargo build` and `cargo build --release`, specifically addressing how each command handles compiler optimizations and the resulting executable's performance.
+
+  // const grade = await gradeKnowledgeQuestion("Explain the difference between `cargo build` and `cargo build --release`, specifically addressing how each command handles compiler optimizations and the resulting executable's performance.",
+  //   "Cargo build compiles the binary while adding the release option enables runtime and compiler optimizations",
+  //   "Cargo basics",
+  //   "rust programming"
+  // )
+
+  // console.log(grade)
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.

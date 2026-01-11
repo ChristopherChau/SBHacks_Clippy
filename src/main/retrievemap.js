@@ -1,18 +1,15 @@
 import dotenv from 'dotenv';
-import { fileURLToPath } from 'url';
-import { dirname, resolve } from 'path';
 import { OpenRouter } from '@openrouter/sdk';
 import { eq } from 'drizzle-orm';
 import { db, searchCache, allocationCache, contentCache } from './db/index.js';
 
-// Load .env from project root
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-dotenv.config({ path: resolve(__dirname, '../../.env') });
+dotenv.config();
 
 const openRouter = new OpenRouter({
     apiKey: process.env.OPENROUTER_API_KEY,
 });
+
+const model = "google/gemini-3-flash-preview";
 
 // Search for different categories (if possible) or generic beginner, intermediate, advanced
 const searchOpenRouter = async (skill, level_description, end_goal) => {
@@ -37,7 +34,7 @@ const searchOpenRouter = async (skill, level_description, end_goal) => {
 
     // Not in cache, make API call
     const response = await openRouter.chat.send({
-        model: 'google/gemini-3-flash-preview',
+        model: model,
         messages: [
             {
                 role: 'user',
@@ -85,7 +82,7 @@ const allocationSkillAgent = async (topic, tiers) => {
     Output the format in { skills: [...]}. Include skills used across all people of varying experience for the skill.
     For example for rock climbing one could learn crimping, hip positioning, etc.`;
     const skillResponse = await openRouter.chat.send({
-        model: 'google/gemini-3-flash-preview',
+        model: model,
         messages: [
             {
                 role: 'user',
@@ -105,7 +102,7 @@ const allocationSkillAgent = async (topic, tiers) => {
     don't have to be uniquely placed within a tier and can exist within multiple tiers. Output the format in
     { tier1: [skill1, skill4, ...], tier2: [skill2, skill4, ...], ...}`;
     const catergorizationResponse = await openRouter.chat.send({
-        model: 'google/gemini-3-flash-preview',
+        model: model,
         messages: [
             {
                 role: 'user',
@@ -156,7 +153,7 @@ const contentSkill = async (topic, skills) => {
     If there is no reasonable resource found for the skill put null. Output the format in
     { skill1: {description: ..., tips: [...], url: ...}, skill2: ..., ...}`;
     const contentResponse = await openRouter.chat.send({
-        model: 'google/gemini-3-flash-preview',
+        model: model,
         messages: [
             {
                 role: 'user',
@@ -201,6 +198,7 @@ export const generateRoadmap = async (topic, level_description, end_goal) => {
                 tips: contentResponse[skills[j]].tips,
                 url: contentResponse[skills[j]].url,
                 description: contentResponse[skills[j]].description,
+                pass: 0,
             }
             parsedSkills.push(parsedSkill);
         }
@@ -211,4 +209,49 @@ export const generateRoadmap = async (topic, level_description, end_goal) => {
         levels.push(layer);
     }
     return levels;
+}
+
+export const generateKnowledgeQuestion = async (skill, topic) => {
+    const questionPrompt = `Generate an exam short response intermediate knowledge-based question about the topic: ${topic}, more specifically the skill ${skill}.
+    Output only the question and nothing else`
+
+    const questionResponse = await openRouter.chat.send({
+        model: model,
+        messages: [
+            {
+                role: 'user',
+                content: questionPrompt,
+            }
+        ],
+        stream: false,
+    });
+
+    const target = questionResponse.choices[0].message.content;
+    return target;
+}
+
+export const gradeKnowledgeQuestion = async (question, answer, skill, topic) => {
+    const gradePrompt = `For the topic of: ${topic}, more specifically the skill ${skill}, I was 
+    asked the question: ${question}. My response is "${answer}". Return a JSON object stating whether 
+    I correctly answer the question and demonstrate reasonable level of knowledge about the skill. Give 0
+    for a fail, 1 for a pass, and 2 for a partial pass.
+    If I didn't answer correctly or partially passed provide reasoning and what you are looking for. 
+    Follow the format { pass: 0, reason: null }`
+
+    const gradeResponse = await openRouter.chat.send({
+        model: model,
+        messages: [
+            {
+                role: 'user',
+                content: gradePrompt,
+            },
+        ],
+        stream: false,
+        responseFormat: {
+            type: "json_object",
+        }
+    });
+
+    const target = JSON.parse(gradeResponse.choices[0].message.content);
+    return target;
 }
