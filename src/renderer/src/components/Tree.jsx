@@ -159,7 +159,7 @@ function Tree({ processedData, topic = '' }) {
 
           positions[skillId] = {
             x: offsetX + width / 2,
-            y: offsetY - height / 2,
+            y: offsetY + height / 2,
             top: offsetY,
             bottom: offsetY + height
           }
