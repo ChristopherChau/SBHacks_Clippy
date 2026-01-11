@@ -60,7 +60,7 @@ function Tree({ processedData }) {
             <div key={startNode.id} className="tree-level">
               <div className="node node--start">{`Start ${startNode.levelIndex}`}</div>
               <div className="tree-start-to-skills" />
-              <div className="tree-skill-row">
+              <div className="tree-skill-row ">
                 {skills.map((skill) => (
                   <div key={skill.id} className="tree-skill-wrap">
                     <div
