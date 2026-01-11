@@ -74,8 +74,9 @@ const allocationSkillAgent = async (db, topic, tiers) => {
   }
 
   // 1. Find overall list of technical skill
-  const skillPrompt = `Search and find a list of technical skills related to learning the skill of ${topic}.
-    Include skills used across all people of varying experience for the skill. For example for rock climbing one could learn crimping, hip positioning, etc.
+  const skillPrompt = `Search and find a list of technical skills related to learning the topic of ${topic}.
+    Include skills used across all people of varying experience for the skill. Try to find at least 9 skills. 
+    For example for rock climbing one could learn crimping, hip positioning, etc.
     Output the format in { skills: [...]}. `
   const skillResponse = await openRouter.chat.send({
     model: model,
@@ -95,7 +96,7 @@ const allocationSkillAgent = async (db, topic, tiers) => {
   // 2. Catergorise which skill belongs to which difficulty (search)
   const catergorizationPrompt = `For the topic of ${topic} consider the skill list: ${skillTarget.skill} and the tiers/ranks: ${tiers}.
     Search the web for context on each tier and for each tier, place skills that would necessary and optimal to learn at that skill. 
-    Also figure out which skills depend on which skill, with the condition that skills from later tiers depend on skills on earlier
+    Try not to always have the same number of skills each tier and have at least 3 skills. Also figure out which skills depend on which skill, with the condition that skills from later tiers depend on skills on earlier
     tiers. Output the format in
     { layering: { tier1: [skill1, skill4, ...], tier2: [skill2, skill4, ...], ...}, dependencies: { skill1: [], skill2: [skill1, skill3], ...} }`
   const catergorizationResponse = await openRouter.chat.send({
@@ -259,4 +260,56 @@ export const gradeKnowledgeQuestion = async (question, answer, skill, topic) => 
 
   const target = JSON.parse(gradeResponse.choices[0].message.content)
   return target
+}
+
+export const generateDemonstrativeQuestion = async (skill, topic) => {
+  const questionPrompt = `A person is trying to improve at ${topic}, specifically the skill ${skill}. Ask them to perform something related to the skill.
+    Output only the request and nothing else`
+
+  const questionResponse = await openRouter.chat.send({
+    model: model,
+    messages: [
+      {
+        role: 'user',
+        content: questionPrompt
+      }
+    ],
+    stream: false
+  })
+
+  const target = questionResponse.choices[0].message.content
+  return target
+};
+
+const encodeVideoToBase64 = async (videoPath) => {
+  const videoBuffer = await fs.promises.readFile(videoPath);
+  const base64Video = videoBuffer.toString('base64');
+  return `data:video/mp4;base64,${base64Video}`;
+};
+
+export const gradeDemonstrativeQuestion = async (question, videoPath, skill, topic) =>{
+    const videoPath = 'path/to/your/video.mp4';
+    const base64Video = await encodeVideoToBase64(videoPath);
+
+    const response = await openRouter.chat.send({
+    model: 'google/gemini-2.5-flash',
+    messages: [
+        {
+        role: 'user',
+        content: [
+            {
+            type: 'text',
+            text: "",
+            },
+            {
+            type: 'video_url',
+            videoUrl: {
+                url: base64Video,
+            },
+            },
+        ],
+        },
+    ],
+    stream: false,
+    });
 }

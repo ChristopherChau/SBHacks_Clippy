@@ -4,7 +4,7 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
 import { createDb } from './db'
-import { generateRoadmap } from './retrievemap'
+import { generateKnowledgeQuestion, generateRoadmap, gradeKnowledgeQuestion } from './retrievemap'
 let db
 
 function createWindow() {
@@ -53,9 +53,9 @@ app.whenReady().then(async () => {
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
 
-  // const response = await generateRoadmap("rust programming", "I know computer science conceptions like data structures but I have no knowledge on how to use rust", "I want to create a custom socket in rust")
+  // const response = await generateRoadmap(db, "rust programming", "I know computer science conceptions like data structures but I have no knowledge on how to use rust", "I want to create a custom socket in rust")
 
-  // console.log(response);
+  // console.log(response[1].skills);
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
@@ -92,4 +92,16 @@ ipcMain.handle('generate-roadmap', async (_, payload) => {
   const { topic, level_description, end_goal } = payload
 
   return await generateRoadmap(db, topic, level_description, end_goal)
+})
+
+ipcMain.handle('generate-knowledge-question', async (_, payload) => {
+  const { skill, topic } = payload
+
+  return await generateKnowledgeQuestion(skill, topic)
+})
+
+ipcMain.handle('grade-question', async (_, payload) => {
+  const { question, answer, skill, topic } = payload
+
+  return await gradeKnowledgeQuestion(question, answer, skill, topic)
 })

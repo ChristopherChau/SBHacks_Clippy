@@ -1,76 +1,59 @@
 import Tree from './Tree'
+import Spinning from './Spinning'
 import { useState, useEffect, useRef } from 'react'
 
-// const response = await generateRoadmap("rust programming", "I know computer science conceptions like data structures but I have no knowledge on how to use rust", "I want to create a custom socket in rust")
-// const Visualizer = ({ data }) => {
-const Visualizer = () => {
+const Visualizer = ({ inputData }) => {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const generated = useRef(false)
+  const validateInput = (input) => {
+    if (!input || !input.levels || !Array.isArray(input.levels)) return false
+    return true
+  }
+
   useEffect(() => {
     const fetchRoadmap = async () => {
+      if (generated.current) return
+      generated.current = true
+
       try {
-        if (generated.current == false) {
-          generated.current = true
-          const response = await window.api.generateRoadmap({
-            topic: 'rust programming',
-            level_description:
-              'I know computer science concepts like data structures but I have no knowledge on how to use rust',
-            end_goal: 'I want to create a custom socket in rust'
-          })
-          setData({ levels: response })
+        setLoading(true)
+        setError(null)
+
+        await new Promise((resolve) => setTimeout(resolve, 2000))
+
+        const response = await window.api.generateRoadmap({
+          topic: inputData[0],
+          level_description: inputData[1],
+          end_goal: inputData[2]
+        })
+
+        console.log('Raw API Response:', response)
+
+        const rawData = { levels: response }
+
+        if (!validateInput(rawData)) {
+          throw new Error('API returned invalid data format')
         }
+
+        setData(rawData)
       } catch (err) {
         console.error(err)
-        setError('Failed to generate roadmap')
-        console.log(err)
+        setError(err.message || 'Failed to generate roadmap')
       } finally {
         setLoading(false)
       }
     }
 
     fetchRoadmap()
-    console.log('fetched')
   }, [])
 
-  useEffect(() => {
-    console.log(data)
-  }, [data])
-
-  // Validate input structure
-  const validateInput = (input) => {
-    if (!input || !input.levels || !Array.isArray(input.levels)) {
-      console.error('Invalid input: expected an object with a "levels" array')
-      return false
-    }
-
-    for (const level of input.levels) {
-      if (!Array.isArray(level.skills)) {
-        console.error('Invalid level: skills must be an array')
-        return false
-      }
-      for (const skill of level.skills) {
-        if (!skill.id) {
-          console.error('Invalid skill: missing required field id')
-          return false
-        }
-      }
-    }
-
-    return true
-  }
-
-  // Process the data to create information needed for nodes as well as mapping each node to an indexLevel which we'll use to connect
   const processData = (input) => {
-    if (!validateInput(input)) {
-      return null
-    }
+    if (!validateInput(input)) return null
 
     const processed = {
-      root: {
-        id: 'root',
-      },
+      root: { id: 'root' },
       startNodes: [],
       skillNodes: []
     }
@@ -85,7 +68,6 @@ const Visualizer = () => {
     })
 
     input.levels.forEach((level, index) => {
-      // Create start node for current level
       const startNode = {
         id: `difficulty-${level.difficulty}`,
         difficulty: level.difficulty,
@@ -97,7 +79,7 @@ const Visualizer = () => {
       const skills = level.skills.map((skill) => {
         // Convert dependency names to IDs
         const dependencyIds = (skill.dependencies || [])
-          .map(depName => skillNameToId.get(depName))
+          .map((depName) => skillNameToId.get(depName))
           .filter(Boolean) // Remove any undefined mappings
 
         return {
@@ -119,29 +101,49 @@ const Visualizer = () => {
     return processed
   }
 
-  const processedData = data && validateInput(data) ? processData(data) : null
+  const processedData = data ? processData(data) : null
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center w-screen h-screen bg-[#020617] select-none">
+        <Spinning size="w-16 h-16" color="text-blue-500" />
+        <p className="mt-6 text-slate-400 font-medium animate-pulse tracking-wide">
+          GENERATING ROADMAP...
+        </p>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center w-screen h-screen bg-[#020617] select-none">
+        <div className="text-red-500 font-bold text-xl mb-4">Error</div>
+        <div className="text-slate-400 mb-6">{error}</div>
+        <button
+          onClick={() => window.location.reload()}
+          className="px-4 py-2 bg-slate-800 text-white rounded hover:bg-slate-700 transition-colors"
+        >
+          Retry
+        </button>
+      </div>
+    )
+  }
+
+  if (processedData) {
+    return (
+      <div className="relative">
+        <div className="absolute top-4 left-4 z-50 text-white/50 text-xs pointer-events-none">
+          <p>Tasks: {processedData.skillNodes.length}</p>
+        </div>
+        <Tree processedData={processedData} />
+      </div>
+    )
+  }
 
   return (
-    <>
-      <div>
-        {loading ? (
-          <div>Generating roadmap…</div>
-        ) : error ? (
-          <div>{error}</div>
-        ) : processedData ? (
-          <div>
-            <h3 className="text-lg font-bold mb-4">
-              <p>Starting point: {processedData.startNodes[0]?.id ?? 'n/a'}</p>
-              <p>Difficulty Levels: {processedData.startNodes.length}</p>
-              <p>Tasks needed to complete: {processedData.skillNodes.length}</p>
-            </h3>
-            <Tree processedData={processedData} />
-          </div>
-        ) : (
-          <div>Error processing input data</div>
-        )}
-      </div>
-    </>
+    <div className="flex items-center justify-center w-screen h-screen bg-[#020617] text-white">
+      Unexpected state: No data and no error.
+    </div>
   )
 }
 

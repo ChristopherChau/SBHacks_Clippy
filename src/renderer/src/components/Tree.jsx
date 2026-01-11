@@ -75,10 +75,10 @@ const DependencyLines = ({ skills, cardPositions, hoveredSkillId }) => {
           <path
             key={`${edge.from}-${edge.to}-${idx}`}
             d={path}
-            stroke={isHighlighted ? "#60a5fa" : "#3b82f6"}
-            strokeWidth={isHighlighted ? "3" : "2"}
+            stroke={isHighlighted ? '#60a5fa' : '#3b82f6'}
+            strokeWidth={isHighlighted ? '3' : '2'}
             fill="none"
-            opacity={isHighlighted ? "0.9" : "0.5"}
+            opacity={isHighlighted ? '0.9' : '0.5'}
             strokeDasharray="5,5"
           />
         )
@@ -87,14 +87,14 @@ const DependencyLines = ({ skills, cardPositions, hoveredSkillId }) => {
   )
 }
 
-function Tree({ processedData }) {
+function Tree({ processedData, topic = '' }) {
   const [doneSkillIds, setDoneSkillIds] = useState(() => new Set())
   const [selectedSkillId, setSelectedSkillId] = useState(null)
   const [hoveredSkillId, setHoveredSkillId] = useState(null)
   const cardRefs = useRef({}) // Track DOM refs for each skill card
   const [cardPositions, setCardPositions] = useState({}) // Track positions for drawing edges
 
-  const allSkills = processedData?.skillNodes ?? []
+  const allSkills = useMemo(() => processedData?.skillNodes ?? [], [processedData])
   const totalTasks = allSkills.length
   const completedTasks = doneSkillIds.size
   const progressPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0
@@ -113,9 +113,9 @@ function Tree({ processedData }) {
   const getRelatedSkills = (skillId) => {
     if (!skillId) return new Set()
     const related = new Set([skillId])
-    const skill = allSkills.find(s => s.id === skillId)
+    const skill = allSkills.find((s) => s.id === skillId)
     if (skill?.dependencies) {
-      skill.dependencies.forEach(depId => related.add(depId))
+      skill.dependencies.forEach((depId) => related.add(depId))
     }
     return related
   }
@@ -220,7 +220,11 @@ function Tree({ processedData }) {
         <TransformComponent wrapperStyle={{ width: '100vw', height: '100vh' }}>
           <div className="relative p-[1500px] flex flex-col items-center">
             {/* DEPENDENCY LINES LAYER */}
-            <DependencyLines skills={allSkills} cardPositions={cardPositions} hoveredSkillId={hoveredSkillId} />
+            <DependencyLines
+              skills={allSkills}
+              cardPositions={cardPositions}
+              hoveredSkillId={hoveredSkillId}
+            />
 
             {levels.map((startNode, levelIdx) => {
               const currentSkills = skillsByLevel.get(startNode.levelIndex) ?? []
@@ -229,7 +233,7 @@ function Tree({ processedData }) {
                 <div key={startNode.id} className="flex flex-col items-center w-full mb-16">
                   {/* LEVEL TITLE BOX */}
                   <div className="z-20 px-8 py-2.5 bg-[#1e293b] border border-blue-500/40 rounded-md text-white font-black text-sm uppercase tracking-widest shadow-2xl min-w-[200px] text-center mb-16">
-                    {startNode.name || `Level ${startNode.difficulty}`}
+                    {startNode.name || `${startNode.difficulty}`}
                   </div>
 
                   {/* SKILL CARDS ROW */}
@@ -281,6 +285,7 @@ function Tree({ processedData }) {
       {selectedSkillId && (
         <ResourceCard
           skill={allSkills.find((s) => s.id === selectedSkillId)}
+          topic={topic}
           isDone={doneSkillIds.has(selectedSkillId)}
           onToggleDone={() => {
             setDoneSkillIds((prev) => {
