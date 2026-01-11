@@ -75,25 +75,42 @@ const Visualizer = () => {
       skillNodes: []
     }
 
+    // First pass: create a mapping of skill names to IDs
+    const skillNameToId = new Map()
+    input.levels.forEach((level) => {
+      level.skills.forEach((skill, idx) => {
+        const skillId = skill.id || `d${level.difficulty}-s${idx}`
+        skillNameToId.set(skill.name, skillId)
+      })
+    })
+
     input.levels.forEach((level, index) => {
       // Create start node for current level
       const startNode = {
         id: `difficulty-${level.difficulty}`,
         difficulty: level.difficulty,
-        levelIndex: index
+        levelIndex: index,
+        name: level.difficulty
       }
 
       // Create skill nodes
-      const skills = level.skills.map((skill) => ({
-        id: skill.id,
-        name: skill.name,
-        description: skill.description ?? '',
-        url: skill.url,
-        tips: skill.tips,
-        levelIndex: index,
-        skill: skill.pass,
-        dependencies: skill.dependencies
-      }))
+      const skills = level.skills.map((skill) => {
+        // Convert dependency names to IDs
+        const dependencyIds = (skill.dependencies || [])
+          .map(depName => skillNameToId.get(depName))
+          .filter(Boolean) // Remove any undefined mappings
+
+        return {
+          id: skill.id,
+          name: skill.name,
+          description: skill.description ?? '',
+          url: skill.url,
+          tips: skill.tips,
+          levelIndex: index,
+          skill: skill.pass,
+          dependencies: dependencyIds // Now contains IDs instead of names
+        }
+      })
 
       processed.startNodes.push(startNode)
       processed.skillNodes.push(...skills)
