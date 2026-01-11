@@ -6,3 +6,4 @@ out
 *.log*
 .env
 client_secret_*.json
+cache.db
