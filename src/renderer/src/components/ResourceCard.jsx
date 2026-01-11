@@ -4,11 +4,23 @@ export default function ResourceCard({ skill, isDone, onToggleDone, onClose }) {
   if (!skill) return null
 
   return (
-    <div className="fixed inset-0 bg-black/55 flex items-center justify-center p-6 z-[10000]" onClick={onClose} role="presentation">
-      <div className="w-[min(560px,92vw)] rounded-[14px] border border-slate-400/35 bg-slate-900/92 p-4 shadow-[0_20px_80px_rgba(0,0,0,0.45)] flex flex-col min-h-[260px]" onClick={(e) => e.stopPropagation()} role="dialog">
+    <div
+      className="fixed inset-0 bg-black/55 flex items-center justify-center p-6 z-[10000]"
+      onClick={onClose}
+      role="presentation"
+    >
+      <div
+        className="w-[min(560px,92vw)] rounded-[14px] border border-slate-400/35 bg-slate-900/92 p-4 shadow-[0_20px_80px_rgba(0,0,0,0.45)] flex flex-col min-h-[260px]"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+      >
         <div className="relative flex items-center justify-center px-[90px]">
           <div className="font-black text-base text-center w-full">{skill.name}</div>
-          <button type="button" className="absolute right-0 top-0 rounded-[10px] py-2 px-2.5 border border-slate-400/35 bg-slate-400/8 font-extrabold cursor-pointer" onClick={onClose}>
+          <button
+            type="button"
+            className="absolute right-0 top-0 rounded-[10px] py-2 px-2.5 border border-slate-400/35 bg-slate-400/8 font-extrabold cursor-pointer"
+            onClick={onClose}
+          >
             Close
           </button>
         </div>

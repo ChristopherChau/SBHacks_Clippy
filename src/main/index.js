@@ -44,11 +44,9 @@ function createWindow() {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(async () => {
   // Initialize database
-  await initDb();
+  await initDb()
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
-  
-  const response = await generateRoadmap("rust programming", "I know computer science conceptions like data structures but I have no knowledge on how to use rust", "I want to create a custom socket in rust")
 
   console.log(response[0].skills[0]);
 

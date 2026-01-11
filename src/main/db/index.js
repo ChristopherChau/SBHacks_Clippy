@@ -9,7 +9,7 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
 const client = createClient({
-  url: `file:${resolve(__dirname, '../../cache.db')}`,
+  url: `file:${resolve(__dirname, '../../cache.db')}`
 })
 
 export const db = drizzle(client)
