@@ -8,8 +8,8 @@ import { initDb } from './db'
 function createWindow() {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 90,
-    height: 670,
+    width: 640,
+    height: 320,
     show: false,
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
