@@ -73,7 +73,7 @@ const Visualizer = ({ inputData }) => {
         tips: skill.tips,
         levelIndex: index,
         skill: skill.pass,
-        dependencies: skill.dependencies
+      dependencies: skill.dependencies
       }))
 
       processed.startNodes.push(startNode)

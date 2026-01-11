@@ -50,7 +50,7 @@ export default function FloatingInput({ onSubmit, placeholders = ['What do you w
   }
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center p-6 z-9999">
+    <div className="fixed inset-0 flex items-center justify-center p-6 invert">
       <form
         onSubmit={handleSubmit}
         className="w-[80vw] max-w-[1200px] p-10 font-serif"
