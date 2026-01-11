@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from 'electron'
+import { contextBridge } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 
 // Custom APIs for renderer
@@ -10,11 +10,7 @@ const api = {}
 if (process.contextIsolated) {
   try {
     contextBridge.exposeInMainWorld('electron', electronAPI)
-
-    // CHANGE Testing GCal
-    contextBridge.exposeInMainWorld('api', {
-      exportRoadmap: (data) => ipcRenderer.invoke('calendar:export-roadmap', data)
-    })
+    contextBridge.exposeInMainWorld('api', api)
   } catch (error) {
     console.error(error)
   }
