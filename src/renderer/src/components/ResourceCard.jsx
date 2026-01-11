@@ -1,7 +1,11 @@
 /* eslint-disable react/prop-types */
+import { XIcon } from 'lucide-react'
 
 export default function ResourceCard({ skill, isDone, onToggleDone, onClose }) {
   if (!skill) return null
+
+  const tips = Array.isArray(skill.tips) ? skill.tips : []
+  const description = typeof skill.description === 'string' ? skill.description : ''
 
   return (
     <div
@@ -10,52 +14,67 @@ export default function ResourceCard({ skill, isDone, onToggleDone, onClose }) {
       role="presentation"
     >
       <div
-        className="w-[min(560px,92vw)] rounded-[14px] border border-slate-400/35 bg-slate-900/92 p-4 shadow-[0_20px_80px_rgba(0,0,0,0.45)] flex flex-col min-h-[260px]"
+        className="w-[min(560px,92vw)] max-h-[82vh] rounded-[14px] border border-slate-400/35 bg-slate-900/92 p-4 px-8 shadow-[0_20px_80px_rgba(0,0,0,0.45)] flex flex-col relative"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
       >
-        <div className="relative flex items-center justify-center px-[90px]">
-          <div className="font-black text-base text-center w-full">{skill.name}</div>
-          <button
-            type="button"
-            className="absolute right-0 top-0 rounded-[10px] py-2 px-2.5 border border-slate-400/35 bg-slate-400/8 font-extrabold cursor-pointer"
-            onClick={onClose}
-          >
-            Close
-          </button>
+        <button
+          type="button"
+          className="absolute right-4 top-6 flex items-center justify-center cursor-pointer"
+          onClick={onClose}
+        >
+          <XIcon className="pointer-events-none" />
+        </button>
+        <div className="relative flex items-center justify-center px-[90px] py-4">
+          <div className="font-black text-2xl text-center w-full py-[-6]">{skill.name}</div>
         </div>
 
-        <div className="flex gap-2.5 flex-wrap justify-center mt-2.5">
-          <a
-            className="inline-block no-underline font-extrabold text-[13px] py-2.5 px-3 rounded-xl border border-slate-400/[0.28] bg-slate-400/8 aria-disabled:opacity-45 aria-disabled:cursor-not-allowed"
-            href={skill.youtubeUrl || '#'}
-            target="_blank"
-            rel="noreferrer"
-            aria-disabled={!skill.youtubeUrl}
-            onClick={(e) => {
-              if (!skill.youtubeUrl) e.preventDefault()
-            }}
-          >
-            YouTube
-          </a>
-          <a
-            className="inline-block no-underline font-extrabold text-[13px] py-2.5 px-3 rounded-xl border border-slate-400/[0.28] bg-slate-400/8 aria-disabled:opacity-45 aria-disabled:cursor-not-allowed"
-            href={skill.articleUrl || '#'}
-            target="_blank"
-            rel="noreferrer"
-            aria-disabled={!skill.articleUrl}
-            onClick={(e) => {
-              if (!skill.articleUrl) e.preventDefault()
-            }}
-          >
-            Article
-          </a>
+        {description ? (
+          <div className="mt-4 text-base text-slate-200 text-center leading-relaxed text-left">
+            {description}
+          </div>
+        ) : (
+          <div className="mt-2 text-sm text-slate-400 text-center leading-relaxed">
+            Description placeholder (will be provided later).
+          </div>
+        )}
+
+        <div className="mt-4">
+          <div className="text-2xl font-bold uppercase tracking-widest text-slate-500 mb-2 text-center">
+            Tips
+          </div>
+          {tips.length > 0 ? (
+            <ul className="w-full text-sm text-slate-100 list-disc text-left">
+              {tips.map((tip, i) => (
+                <li key={`${skill.id}-tip-${i}`}>{String(tip)}</li>
+              ))}
+            </ul>
+          ) : (
+            <div className="text-sm text-slate-400 text-center">No tips available yet.</div>
+          )}
+        </div>
+        {/* Scrollable body so tips/resources fit nicely */}
+        <div className="mt-8 flex-1 overflow-y-auto pr-1">
+          <div className="flex gap-2.5 flex-wrap justify-center">
+            <a
+              className="inline-block no-underline font-extrabold text-[13px] py-2.5 px-3 rounded-xl border border-slate-400/[0.28] bg-slate-400/8 aria-disabled:opacity-45 aria-disabled:cursor-not-allowed"
+              href={skill.url || '#'}
+              target="_blank"
+              rel="noreferrer"
+              aria-disabled={!skill.url}
+              onClick={(e) => {
+                if (!skill.url) e.preventDefault()
+              }}
+            >
+              Resource
+            </a>
+          </div>
         </div>
 
-        <div className="flex justify-end mt-auto">
+        <div className="flex justify-end">
           <button
             type="button"
-            className={`rounded-xl py-2.5 px-3 border font-black cursor-pointer ${
+            className={`rounded-lg py-2.5 px-3 border font-black cursor-pointer text-sm ${
               isDone
                 ? 'border-green-600/60 bg-green-600/22'
                 : 'border-slate-400/[0.28] bg-slate-400/8'

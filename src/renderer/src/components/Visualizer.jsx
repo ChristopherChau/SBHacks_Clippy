@@ -70,7 +70,6 @@ const Visualizer = () => {
     const processed = {
       root: {
         id: 'root',
-        type: 'root'
       },
       startNodes: [],
       skillNodes: []
@@ -80,7 +79,6 @@ const Visualizer = () => {
       // Create start node for current level
       const startNode = {
         id: `difficulty-${level.difficulty}`,
-        type: 'difficulty',
         difficulty: level.difficulty,
         levelIndex: index
       }
@@ -88,14 +86,13 @@ const Visualizer = () => {
       // Create skill nodes
       const skills = level.skills.map((skill) => ({
         id: skill.id,
-        type: 'skill',
         name: skill.name,
-        summary: skill.summary ?? '',
-        youtubeUrl: skill.youtubeUrl,
-        articleUrl: skill.articleUrl,
-        contentType: skill.contentType,
-        difficulty: level.difficulty,
-        levelIndex: index
+        description: skill.description ?? '',
+        url: skill.url,
+        tips: skill.tips,
+        levelIndex: index,
+        skill: skill.pass,
+        dependencies: skill.dependencies
       }))
 
       processed.startNodes.push(startNode)
